@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import logo from './logo.svg';
 import './App.css';
+import Register from './components/Register';
 
 function App() {
   const [message, setMessage] = useState("");
@@ -32,6 +33,7 @@ function App() {
           {message}
         </p>
       </header>
+      <Register />
     </div>
   );
 }
