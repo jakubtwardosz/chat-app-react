@@ -4,30 +4,27 @@ import { Link } from "react-router-dom";
 
 function Register() {
     const [username, setUsername] = useState('');
-    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [acceptedTerms, setAcceptedTerms] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
     const handleRegister = async (e) => {
         e.preventDefault();
-
-        if (password !== confirmPassword) {
-            setError("Hasła nie są zgodne.");
-            return;
-        }
-
-        if (!acceptedTerms) {
-            setError("Musisz zaakceptować regulamin i politykę prywatności.");
-            return;
-        }
-
-        const user = { username, email, password };
-
+    
         try {
-            const response = await axios.post('http://localhost:5256/api/auth/register', user);
+            const response = await axios.put(
+                "https://localhost:7142/api/auth/register",
+                { // Obiekt z danymi w formacie JSON
+                    username: username,
+                    password: password,
+                },
+                {
+                    headers: {
+                        "Content-Type": "application/json", // Ustawienie odpowiedniego Content-Type
+                    },
+                    withCredentials: true, // Jeśli korzystasz z ciasteczek
+                }
+            );
             setSuccess("Rejestracja zakończona sukcesem!");
             setError('');
         } catch (err) {
@@ -52,18 +49,7 @@ function Register() {
                             required
                         />
                     </div>
-
-                    <div>
-                        <label className="block text-gray-700">Adres e-mail</label>
-                        <input
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="w-full p-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            required
-                        />
-                    </div>
-
+                    
                     <div>
                         <label className="block text-gray-700">Hasło</label>
                         <input
@@ -73,29 +59,6 @@ function Register() {
                             className="w-full p-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             required
                         />
-                    </div>
-
-                    <div>
-                        <label className="block text-gray-700">Potwierdź hasło</label>
-                        <input
-                            type="password"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            className="w-full p-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            required
-                        />
-                    </div>
-
-                    <div className="flex items-center">
-                        <input
-                            type="checkbox"
-                            checked={acceptedTerms}
-                            onChange={(e) => setAcceptedTerms(e.target.checked)}
-                            className="mr-2"
-                        />
-                        <label className="text-gray-700">
-                            Akceptuję <a href="/terms" className="text-blue-500 hover:underline">regulamin</a> i <a href="/privacy" className="text-blue-500 hover:underline">politykę prywatności</a>.
-                        </label>
                     </div>
 
                     <button
