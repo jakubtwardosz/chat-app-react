@@ -2,15 +2,29 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 import Register from './components/Register';
+import Login from './components/Login';
+import Navbar from './components/Navbar';
+import Chat from './components/Chat';
 
 function App() {
+  const isLoggedIn = localStorage.getItem("token");
+
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<Navigate to="/register" />} />
-        
-        <Route path="/register" element={<Register />} />
-      </Routes>
+      <div className="h-screen flex flex-col">
+        <Navbar />
+
+        <Routes>
+          <Route path="/" element={<Navigate to={isLoggedIn ? "/chat" : "/login"} />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/chat" element={<Chat />} />
+        </Routes>
+
+        <div className="p-4">
+          <h2>Witamy w Poorchat!</h2>
+        </div>
+      </div>
     </Router>
   );
 }
