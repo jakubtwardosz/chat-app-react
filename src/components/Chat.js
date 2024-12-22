@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import * as signalR from '@microsoft/signalr';
 
 const Chat = () => {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [chatId, setChatId] = useState(null);
+    const [connection, setConnection] = useState(null);
     const navigate = useNavigate();
+    const token = localStorage.getItem('token');
 
     const checkLogin = () => {
-        const token = localStorage.getItem('token');
-
         if (!token) {
             navigate('/login');
             return;
@@ -27,12 +30,61 @@ const Chat = () => {
 
     useEffect(() => {
         checkLogin();
-    }, []);
+        if (isLoggedIn) {
+            axios.post("https://localhost:7142/api/Chat/GetPaginatedChat", null, {
+                params: {
+                    chatName: "Global",
+                    pageNumber: 1,
+                    pageSize: 20
+                },
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            })
+            .then(response => {
+                setChatId(response.data.id);
+                setMessages(response.data.messages);
+                initializeSignalR();
+            })
+            .catch(error => {
+                console.error("Błąd podczas inicjalizacji chatu:", error);
+            });
+        }
+    }, [isLoggedIn]);
+
+    const initializeSignalR = () => {
+        const newConnection = new signalR.HubConnectionBuilder()
+            .withUrl(`https://localhost:7142/messageHub?token=${token}`)
+            .configureLogging(signalR.LogLevel.Information)
+            .build();
+    
+        newConnection.on("ReceiveMessage", (user, message, chat) => {
+            setMessages(prevMessages => [...prevMessages, { sender: user, messageText: message, chatId: chat, createdAt: new Date() }]);
+        });
+    
+        newConnection.onclose(error => {
+            console.error("SignalR Connection Closed: ", error);
+        });
+    
+        newConnection.start()
+            .then(() => {
+                console.log("SignalR Connected");
+                setConnection(newConnection);
+            })
+            .catch(err => console.error("SignalR Connection Error: ", err));
+    };
 
     const handleSend = () => {
-        if (input.trim()) {
-            setMessages([...messages, { text: input, timestamp: new Date() }]);
-            setInput('');
+        if (input.trim() && connection && chatId) {
+            console.log("Sending message:", input);
+            connection.invoke("SendMessageToChat", chatId, input)
+                .then(() => {
+                    console.log("Message sent successfully");
+                    setInput('');
+                })
+                .catch(err => console.error("Błąd podczas wysyłania wiadomości:", err));
+        } else {
+            console.error("Connection is not established, chatId is missing, or input is empty");
         }
     };
 
@@ -45,8 +97,8 @@ const Chat = () => {
             <div className="flex-1 overflow-y-auto mb-4">
                 {messages.map((message, index) => (
                     <div key={index} className="p-2 mb-2 bg-white rounded shadow">
-                        <span>{message.text}</span>
-                        <span className="block text-xs text-gray-500">{message.timestamp.toLocaleTimeString()}</span>
+                        <span>{message.sender}: {message.messageText}</span>
+                        <span className="block text-xs text-gray-500">{new Date(message.createdAt).toLocaleTimeString()}</span>
                     </div>
                 ))}
             </div>
