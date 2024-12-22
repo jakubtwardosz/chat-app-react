@@ -1,10 +1,32 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 function Navbar() {
+    const [name, setName] = useState("Poorchat");
     const navigate = useNavigate();
-
     const isLoggedIn = localStorage.getItem("token");
+
+    useEffect(() => {
+        if (isLoggedIn) {
+            axios.post("https://localhost:7142/api/Chat/GetPaginatedChat", null, {
+                params: {
+                    chatName: "Global",
+                    pageNumber: 1,
+                    pageSize: 20
+                },
+                headers: {
+                    Authorization: `Bearer ${isLoggedIn}`
+                }
+            })
+            .then(response => {
+                setName(response.data.name);
+            })
+            .catch(error => {
+                console.error("Błąd podczas pobierania nazwy:", error);
+            });
+        }
+    }, [isLoggedIn]);
 
     const handleLogout = () => {
         localStorage.removeItem("token");
@@ -13,7 +35,7 @@ function Navbar() {
 
     return (
         <div className="flex items-center justify-between p-4 bg-gray-900 text-white">
-            <h1 className="text-lg font-bold">Poorchat</h1>
+            <h1 className="text-lg font-bold">{name}</h1>
 
             <div className="flex items-center space-x-4">
                 {!isLoggedIn ? (
