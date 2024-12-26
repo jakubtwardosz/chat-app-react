@@ -13,17 +13,12 @@ function App() {
     <Router>
       <div className="h-screen flex flex-col">
         <Navbar />
-
         <Routes>
           <Route path="/" element={<Navigate to={isLoggedIn ? "/chat" : "/login"} />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
           <Route path="/chat" element={<Chat />} />
         </Routes>
-
-        <div className="p-4">
-          <h2>Witamy w Poorchat!</h2>
-        </div>
       </div>
     </Router>
   );

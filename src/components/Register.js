@@ -13,7 +13,7 @@ function Register() {
 
         try {
             const response = await axios.put(
-                "https://localhost:7142/api/auth/register",
+                "https://localhost:7099/api/auth/register",
                 {
                     username: username,
                     password: password,

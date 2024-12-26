@@ -9,7 +9,7 @@ function Navbar() {
 
     useEffect(() => {
         if (isLoggedIn) {
-            axios.post("https://localhost:7142/api/Chat/GetPaginatedChat", null, {
+            axios.post("https://localhost:7099/api/Chat/GetPaginatedChat", null, {
                 params: {
                     chatName: "Global",
                     pageNumber: 1,
